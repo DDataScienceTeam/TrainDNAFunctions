@@ -1,3 +1,13 @@
+##List of Functions (Update as more added in)
+#startTimes
+#failTimes
+#removeDuplicates
+#getClosestandStartTimes
+#timeOnOff
+#shutTimes
+
+
+
 import pandas as pd
 from pyspark.sql.types import *
 from pyspark.sql.functions import pandas_udf,PandasUDFType
