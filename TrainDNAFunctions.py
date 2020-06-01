@@ -2,7 +2,7 @@ import pandas as pd
 from pyspark.sql.types import *
 from pyspark.sql.functions import pandas_udf,PandasUDFType
 
-schema2 = StructType([
+schemaST = StructType([
     StructField("CSN", StringType()),
     StructField("EventID", LongType()),
     StructField("DateTime", StringType())
@@ -10,7 +10,7 @@ schema2 = StructType([
 
  
 
-@pandas_udf(schema2, functionType=PandasUDFType.GROUPED_MAP)
+@pandas_udf(schemaST, functionType=PandasUDFType.GROUPED_MAP)
 def startTimes(df):
     gr = df['CSN'].iloc[0]#used for the default returned dataframe if no data being returned
     EventID = 65533
@@ -34,15 +34,15 @@ def startTimes(df):
 
 
 
+##FAIL TIMES UDF
 
-
-schema3 = StructType([
+schemaFT = StructType([
     StructField("CSN", StringType()),
     StructField("EventID", IntegerType()),
     StructField("DateTime", StringType())
 ])
 
-@pandas_udf(schema3, functionType=PandasUDFType.GROUPED_MAP)
+@pandas_udf(schemaFT, functionType=PandasUDFType.GROUPED_MAP)
 def failTimes(df):
     gr = df['CSN'].iloc[0]#used for the default returned dataframe if no data being returned
     EventID = 65533
@@ -65,10 +65,9 @@ def failTimes(df):
 
 
 
+##REMVOE DUPLICATES UDF
 
-
-
-schema5 = StructType([
+schemaRD = StructType([
     StructField("CSN", StringType()),
     StructField("EventID", IntegerType()),
     StructField("EventIDNext", IntegerType()),
@@ -78,7 +77,7 @@ schema5 = StructType([
     StructField("timeDiff", IntegerType())
 ])
 
-@pandas_udf(schema5, functionType=PandasUDFType.GROUPED_MAP)
+@pandas_udf(schemaRD, functionType=PandasUDFType.GROUPED_MAP)
 def removeDuplicates(df):
     df.rename(columns=lambda x: x.lstrip(), inplace = True)
     
@@ -103,7 +102,7 @@ def removeDuplicates(df):
 
 
 
-schema4 = StructType([
+schemaGCST = StructType([
 StructField("CSN", StringType()),
 StructField("EventID", IntegerType()),
 StructField("DateTime", StringType()), 
@@ -112,7 +111,7 @@ StructField("DateTimeInt", IntegerType()),
 StructField("startIndex", IntegerType())
 ])
 
-@pandas_udf(schema4, functionType=PandasUDFType.GROUPED_MAP)
+@pandas_udf(schemaGCST, functionType=PandasUDFType.GROUPED_MAP)
 def getClosestStartsandTimes(df):
     df.rename(columns=lambda x: x.lstrip(), inplace = True)
     gr = df['CSN'].iloc[0]#used for the default returned dataframe if no data being returned
@@ -170,6 +169,14 @@ def getClosestStartsandTimes(df):
 
 
 
+schemaTOO = StructType([
+    StructField("CSN", StringType()),
+    StructField("Good", LongType()),
+    StructField("Bad", LongType())
+])
+
+@pandas_udf(schemaTOO, functionType=PandasUDFType.GROUPED_MAP)
+
 def timeOnOff(df):
     #Order the data by time (Seconds) and get time Diff
     df = df.sort_values(['DateTime']) #start events
@@ -195,6 +202,15 @@ def timeOnOff(df):
     return default_df
 
 
+
+
+##SHUT TIMES UDF
+schemaShT = StructType([
+    StructField("CSN", StringType()),
+    StructField("EventID", LongType()),
+    StructField("DateTime", StringType())
+])
+@pandas_udf(schemaShT, functionType=PandasUDFType.GROUPED_MAP)
 def shutTimes(df):
     gr = df['CSN'].iloc[0]#used for the default returned dataframe if no data being returned
     EventID = 65534
