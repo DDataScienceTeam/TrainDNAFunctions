@@ -4,9 +4,9 @@ Created on Thu Sep 24 13:21:34 2020
 
 @author: Harry Bowman
 """
-
+##################################################################################
 #Model
-
+##################################################################################
 class UNetModel1D(torch.nn.Module):
     def __init__(self, n_levels, conv_per_level, base_size, scale_size, skipConn, kernel_size=3):
         super(UNetModel1D, self).__init__()
@@ -68,7 +68,9 @@ class UNetModel1D(torch.nn.Module):
         return x
     
     
-
+##################################################################################
+#DATALOADER
+##################################################################################
 #create the dataloader class - takes in a tuple of the velocities and spectrograms and adds them to the dataloader
 # SORT OUT WHAT WE WANT TO DO WITH VELOCITY DATA
 class spectrogramDataset(object):
@@ -96,3 +98,75 @@ class spectrogramDataset(object):
     
     def __len__(self):
         return len(self.specs) 
+
+
+
+##################################################################################
+#UDFs
+##################################################################################
+
+schemaGVSD = StructType([
+    StructField("deviceID", StringType()),
+    StructField("timestamp", StringType()),
+    StructField("Velocity", StringType()),
+    StructField("temperature", StringType()),
+    StructField("spectrum", ArrayType(StringType())),
+    StructField("sampling_freq", StringType()),
+    StructField("waveform_type", StringType()),
+    StructField("size", StringType()), 
+    StructField("count",IntegerType())
+    
+])
+
+@pandas_udf(schemaGVSD, functionType=PandasUDFType.GROUPED_MAP)
+def getValidSpecData(df):
+    timeStamp = str(pd.to_numeric(pd.to_datetime(df['timestamp']))/1e9)
+    deviceID = df['deviceID'].iloc[0]
+    velocity = df['Velocity'].iloc[0]
+    temperature = df['temperature'].iloc[0]
+    spectrum = df['spectrum'].iloc[0]
+    fs = df['sampling_freq'].iloc[0]
+    
+    #Check all waveform types and sizes are the same
+    sVal = df['size'].iloc[0]
+    wfVal = df['waveform_type'].iloc[0]
+    sError = 0
+    wfError = 0
+    for i in df['size'].values:
+        if i != sVal:
+            sError=1
+    for i in df['waveform_type'].values:
+        if i != wfError:
+            wfError=1
+    if sError:
+        sVal = 'error'
+    if wfError:
+        wvVal = 'error'
+    if sError or wfError:
+        deviceId = 'ERRORERROR'
+    returnDf = pd.DataFrame([[deviceID, timeStamp[0], velocity,temperature, spectrum, fs, wfVal, sVal, df.shape[0]]])  
+    return returnDf
+
+
+##################################################################################
+#Pandas Functions
+##################################################################################
+def specGrouper(df):
+    #Add spectrograms into one long list
+    d = df['deviceID'].iloc[0]
+    specList = [df['spectrum'].iloc[0]]
+    for i in df['spectrum']:
+        specList.append(i)  
+    specList.pop(0)
+        
+    velList = []
+    for i in df['Velocity']:
+        velList.append(i)
+        
+    newDf = pd.DataFrame()
+#     newDf['deviceID'] = [d]
+    newDf['spectrums'] = [specList]
+    newDf['velocities'] = [velList]
+
+    return newDf
+    
