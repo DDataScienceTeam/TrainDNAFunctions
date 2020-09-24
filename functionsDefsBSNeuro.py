@@ -66,3 +66,33 @@ class UNetModel1D(torch.nn.Module):
                 else:
                     x = self.activation_fn(j(x))        
         return x
+    
+    
+
+#create the dataloader class - takes in a tuple of the velocities and spectrograms and adds them to the dataloader
+# SORT OUT WHAT WE WANT TO DO WITH VELOCITY DATA
+class spectrogramDataset(object):
+    def __init__(self, tupleData):
+        specList = tupleData[1][0]
+        velList = tupleData[1][1]
+        
+        self.specs = [] #spectrogram data
+#         self.velocity = [] #velocity data
+        self.index = [] #index of the data in chronological order
+        for j,npSpec in enumerate(specList): #For eacfile (spectrum)
+            #Add index
+            self.index.append(j)    
+            
+            #Add Spectrogram
+            npSpecInt = [int(i) for i in npSpec] #Recast to int from string
+            tensorData  = torch.Tensor(npSpecInt).unsqueeze(0)#add channels NOTE if you want to apply transofmations do so here 
+            self.specs.append(tensorData)
+        
+            #Add velocity
+#             self.velocity.append(torch.Tensor(float(velList[j])))
+
+    def __getitem__(self, idx):
+        return self.specs[idx]
+    
+    def __len__(self):
+        return len(self.specs) 
