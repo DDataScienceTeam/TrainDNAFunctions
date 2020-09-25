@@ -75,15 +75,18 @@ class UNetModel1D(torch.nn.Module):
 # SORT OUT WHAT WE WANT TO DO WITH VELOCITY DATA
 class spectrogramDataset(object):
     def __init__(self, tupleData):
-        specList = tupleData[1][0]
-        velList = tupleData[1][1]
+        deviceList = tupleData[1][0]
+        specList = tupleData[1][1]
+        velList = tupleData[1][2]
         
         self.specs = [] #spectrogram data
+        self.device = []
 #         self.velocity = [] #velocity data
         self.index = [] #index of the data in chronological order
         for j,npSpec in enumerate(specList): #For eacfile (spectrum)
             #Add index
-            self.index.append(j)    
+            self.index.append(j)  
+            self.device.append(deviceList[j])
             
             #Add Spectrogram
             npSpecInt = [int(i) for i in npSpec] #Recast to int from string
