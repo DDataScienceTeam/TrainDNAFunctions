@@ -249,7 +249,7 @@ def zscoreClustering(data, trains, **kwargs):
 
 		ax.set_xlabel('Mean normalised')#, fontsize = 15.0)
 		ax.set_ylabel('Standard deviation normalised')
-		ax.set_title(f'Z-score bracketing method. Num std from mean = {n}', color=labelColours)
+		ax.set_title('Z-score bracketing method. Num std from mean = {}'.format(n), color=labelColours)
 
 		plt.show()
 		
@@ -438,9 +438,9 @@ def elliptEnvMethod(data, uniqueTrains, **kwargs):
 	# labelOLD = (elp_d > 4.0).astype(int)
 
 	if False: 
-		print(f'.dist_ = {m1}\t .m(data)={m2}')#\n {m_d}')
-		print(f"Sigma labels: {labels}")
-		print(f"\nCovariance = {elp.covariance_}")
+		print('.dist_ = {m1}\t .m(data)={}'.format(m2))#\n {m_d}')
+		print("Sigma labels: {}".format(labels))
+		print("\nCovariance = {}".format(elp.covariance_))
 
 	if False:
 		labelColours = 'white'
