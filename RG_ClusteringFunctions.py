@@ -212,8 +212,7 @@ def zscoreClustering(data, trains, **kwargs):
 		currTrainStd = data[i, 1]
 				
 		thresh = 0 #optional threshold to widen or make the window more narrow
-		if (currTrainMean > (aboveMean-thresh) or currTrainMean < (belowMean+thresh)) or \
-					(currTrainStd > (aboveStd-thresh) or currTrainStd < (belowStd+thresh)):
+		if (currTrainMean > (aboveMean-thresh) or currTrainMean < (belowMean+thresh)) or (currTrainStd > (aboveStd-thresh) or currTrainStd < (belowStd+thresh)):
 			labels.append(1)
 			if plot: ax.scatter(currTrainMean, currTrainStd, s=15, label=train, c='red', alpha=0.3)
 		else:
@@ -282,8 +281,7 @@ def infoTheoClustering(data, trains, **kwargs):
 		diffStdMean = np.mean(temp[:, 1]) - stdMean
 		diffStdStd = np.std(temp[:, 1]) - stdStd
 
-		diff[i] = [abs(diffMeanMean)/meanMean * 100, abs(diffMeanStd)/meanStd * 100,\
-				   abs(diffStdMean)/stdMean * 100, abs(diffStdStd)/stdStd * 100]
+		diff[i] = [abs(diffMeanMean)/meanMean * 100, abs(diffMeanStd)/meanStd * 100, abs(diffStdMean)/stdMean * 100, abs(diffStdStd)/stdStd * 100]
 	
 	t2 = time.time()
 
