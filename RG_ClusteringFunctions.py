@@ -131,47 +131,47 @@ def gmmClustering(data, trains, **kwargs):
 
 
 # ----------------------- Local Outlier Factor ----------------------------------------
-from sklearn.neighbors import LocalOutlierFactor
+# from sklearn.neighbors import LocalOutlierFactor
 
-def lofClustering(data, trains, **kwargs):
-    # Run LOF on the mean and std data for the trains
-    lof = LocalOutlierFactor(n_neighbors=8, contamination='auto')
-    lof.fit_predict(data)
+# def lofClustering(data, trains, **kwargs):
+#     # Run LOF on the mean and std data for the trains
+#     lof = LocalOutlierFactor(n_neighbors=8, contamination='auto')
+#     lof.fit_predict(data)
     
-    # Get the negative outlier factor for the trains
-    nof = lof.negative_outlier_factor_
+#     # Get the negative outlier factor for the trains
+#     nof = lof.negative_outlier_factor_
     
-    # Run thresholding on the LOF to identify anomalous trains
-    labels = (nof < -2.5).astype(int)
-    anomalies = [train for ind, train in enumerate(trains) if labels[ind]==1]
+#     # Run thresholding on the LOF to identify anomalous trains
+#     labels = (nof < -2.5).astype(int)
+#     anomalies = [train for ind, train in enumerate(trains) if labels[ind]==1]
     
-    anomalyDates = []
-    if kwargs.get('dates', None) is not None:
-        dates = kwargs.get('dates')
-        anomalyDates = [dates[i] for i, val in enumerate(labels) if val == 1]
+#     anomalyDates = []
+#     if kwargs.get('dates', None) is not None:
+#         dates = kwargs.get('dates')
+#         anomalyDates = [dates[i] for i, val in enumerate(labels) if val == 1]
     
-    # print(len(anomalies), len(anomalyDates))
+#     # print(len(anomalies), len(anomalyDates))
 
-    if False:
-        labelColours = 'white'
+#     if False:
+#         labelColours = 'white'
 
-        f1 = plt.figure(1)
-        plt.title('Negative outlier factor value for cutoff', color='white')
-        plt.plot(-nof,'bo', alpha=0.3)
-    #     plt.show()
-        f2 = plt.figure(figsize=(10, 6))
+#         f1 = plt.figure(1)
+#         plt.title('Negative outlier factor value for cutoff', color='white')
+#         plt.plot(-nof,'bo', alpha=0.3)
+#     #     plt.show()
+#         f2 = plt.figure(figsize=(10, 6))
 
-        ax = f2.add_subplot(111)
-        colours = np.array(['blue','red'])
-        ax.scatter(data[:, 0], data[:, 1], s=20, color=colours[labels], alpha=0.3)
-        ax.set_title('Local outlier factor anomalies (adjusted cutoff = 2.5)', color='white')
+#         ax = f2.add_subplot(111)
+#         colours = np.array(['blue','red'])
+#         ax.scatter(data[:, 0], data[:, 1], s=20, color=colours[labels], alpha=0.3)
+#         ax.set_title('Local outlier factor anomalies (adjusted cutoff = 2.5)', color='white')
 
-        ax.set_xlabel('Mean normalised')#, fontsize = 15.0)
-        ax.set_ylabel('Standard deviation normalised')
+#         ax.set_xlabel('Mean normalised')#, fontsize = 15.0)
+#         ax.set_ylabel('Standard deviation normalised')
 
-        plt.show()
+#         plt.show()
     
-    return anomalies, labels, anomalyDates
+#     return anomalies, labels, anomalyDates
 
 # ----------------------- Z-score method (std bracketing) ----------------------------------------
 import math
