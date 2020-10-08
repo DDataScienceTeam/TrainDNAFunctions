@@ -198,7 +198,7 @@ def zscoreClustering(data, trains, **kwargs):
 	aboveMean = meanMean + n*stdMean
 	belowMean = meanMean - n*stdMean
 	
-	if False: print(f"\n std above below = {aboveStd} {belowStd}\n mean above below = {aboveMean} {belowMean}")
+	if False: print("\n std above below = {} {}\n mean above below = {} {}".format(aboveStd, belowStd, aboveMean, belowMean))
 	
 	plot = False
 	if plot:
