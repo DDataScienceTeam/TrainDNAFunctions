@@ -27,107 +27,100 @@ from scipy import linalg
 import time
 
 def gmmClustering(data, trains, **kwargs):
-	st = time.time()
+    st = time.time()
 
-	lowest_aic = np.infty
-	best_mod = ''
-	best_num = 0
+    lowest_aic = np.infty
+    best_mod = ''
+    best_num = 0
 
-	aic = []
-	n_components_range = range(1, 7)
-	cv_types = ['full']#['spherical', 'tied', 'diag', 'full']
-	for cv_type in cv_types:
-		for n_components in n_components_range:
+    aic = []
+    n_components_range = range(1, 7)
+    cv_types = ['full']#['spherical', 'tied', 'diag', 'full']
+    for cv_type in cv_types:
+        for n_components in n_components_range:
 
-			# Fit a Gaussian mixture with EM
-			gmm = GaussianMixture(n_components=n_components,
-										  covariance_type=cv_type)
-			gmm.fit(data)
-			aicCurr = gmm.aic(data)
-			aic.append(aicCurr)
-			# print(f)
+            # Fit a Gaussian mixture with EM
+            gmm = GaussianMixture(n_components=n_components,
+                                          covariance_type=cv_type)
+            gmm.fit(data)
+            aicCurr = gmm.aic(data)
+            aic.append(aicCurr)
+            # print(f)
 
-			# print(f'num k = {n_components}\t cv_type = {cv_type}\t curr score = {gmm.score(data)}')
-			if aicCurr < lowest_aic:
-				lowest_aic = aicCurr
-				best_gmm = gmm
-				best_mod = cv_type
-				best_num = n_components
+            # print(f'num k = {n_components}\t cv_type = {cv_type}\t curr score = {gmm.score(data)}')
+            if aicCurr < lowest_aic:
+                lowest_aic = aicCurr
+                best_gmm = gmm
+                best_mod = cv_type
+                best_num = n_components
 
-	aic = np.array(aic)
+    aic = np.array(aic)
 
-	color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
-								  'darkorange'])
-	clf = best_gmm
+    color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
+                                  'darkorange'])
+    clf = best_gmm
 
-	Y_ = clf.predict(data)
-	yUniq, yCount = np.unique(Y_, return_counts=True)
-	# print(yUniq, yCount)
+    Y_ = clf.predict(data)
+    yUniq, yCount = np.unique(Y_, return_counts=True)
+    # print(yUniq, yCount)
 
-	p = 5 # Percentage of trains to consider a small cluster
-	smallClusters = [val for i, val in enumerate(yUniq) if yCount[i] < (p/100 * sum(yCount))]
+    p = 5 # Percentage of trains to consider a small cluster
+    smallClusters = [val for i, val in enumerate(yUniq) if yCount[i] < (p/100 * sum(yCount))]
 
-	labels = [1 if val in smallClusters else 0 for val in Y_]
-	anomalies = [trains[i] for i, val in enumerate(labels) if val==1]
-	# print(anomalies)
-#   
+    labels = [1 if val in smallClusters else 0 for val in Y_]
+    anomalies = [trains[i] for i, val in enumerate(labels) if val==1]
 
-	anomalyDates = []
-	if kwargs.get('dates', None) is not None:
-		dates = kwargs.get('dates')
+    anomalyDates = []
+    if kwargs.get('dates', None) is not None:
+        dates = kwargs.get('dates')
 
-		anomalyDates = [dates[i] for i, val in enumerate(labels) if val==1]
+        anomalyDates = [dates[i] for i, val in enumerate(labels) if val==1]
 
-	## Plotting of the various covariance matrix types
-	if False:
-		bars = []
+    ## Plotting of the various covariance matrix types
+    if False:
+        bars = []
 
-		# Plot the BIC scores
-		plt.figure(figsize=(12, 15))
-		spl = plt.subplot(2, 1, 1)
-		for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
-			xpos = np.array(n_components_range) + .2 * (i - 2)
-			bars.append(plt.bar(xpos, aic[i * len(n_components_range):
-										  (i + 1) * len(n_components_range)],
-								width=.2, color=color))
-		plt.xticks(n_components_range)
-		plt.ylim([aic.min() * 1.01 - .01 * aic.max(), aic.max()])
-		plt.title('AIC score per model')
-		xpos = np.mod(aic.argmin(), len(n_components_range)) + .65 +\
-			.2 * np.floor(aic.argmin() / len(n_components_range))
-		plt.text(xpos, aic.min() * 0.97 + .03 * aic.max(), '*', fontsize=14)
-		spl.set_xlabel('Number of components')
-		legend = spl.legend([b[0] for b in bars], cv_types)
-		plt.setp(legend.get_texts(), color='black')
+        # Plot the BIC scores
+        plt.figure(figsize=(12, 15))
+        spl = plt.subplot(2, 1, 1)
+        for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
+            xpos = np.array(n_components_range) + .2 * (i - 2)
+            bars.append(plt.bar(xpos, aic[i * len(n_components_range):(i + 1) * len(n_components_range)],width=.2, color=color))
+        plt.xticks(n_components_range)
+        plt.ylim([aic.min() * 1.01 - .01 * aic.max(), aic.max()])
+        plt.title('AIC score per model')
+        xpos = np.mod(aic.argmin(), len(n_components_range)) + .65 + .2 * np.floor(aic.argmin() / len(n_components_range))
+        plt.text(xpos, aic.min() * 0.97 + .03 * aic.max(), '*', fontsize=14)
+        spl.set_xlabel('Number of components')
+        legend = spl.legend([b[0] for b in bars], cv_types)
+        plt.setp(legend.get_texts(), color='black')
 
-		# Plot the winner
-		splot = plt.subplot(2, 1, 2)
-		
+        # Plot the winner
+        splot = plt.subplot(2, 1, 2)
+        
+        for i, (mean, cov, color) in enumerate(zip(clf.means_, clf.covariances_, color_iter)):
+            v, w = linalg.eigh(cov)
+            if not np.any(Y_ == i):
+                continue
+            plt.scatter(data[Y_ == i, 0], data[Y_ == i, 1], color=color, alpha=0.5)
 
-		for i, (mean, cov, color) in enumerate(zip(clf.means_, clf.covariances_,
-												   color_iter)):
-			v, w = linalg.eigh(cov)
-			if not np.any(Y_ == i):
-				continue
-			plt.scatter(data[Y_ == i, 0], data[Y_ == i, 1], color=color, alpha=0.5)
+            # Plot an ellipse to show the Gaussian component
+            angle = np.arctan2(w[0][1], w[0][0])
+            angle = 180. * angle / np.pi  # convert to degrees
+            v = 2. * np.sqrt(2.) * np.sqrt(v)
+            ell = Ellipse(mean, v[0], v[1], 180. + angle, color=color)
+            ell.set_clip_box(splot.bbox)
+            ell.set_alpha(.5)
+            splot.add_artist(ell)
 
-			# Plot an ellipse to show the Gaussian component
-			angle = np.arctan2(w[0][1], w[0][0])
-			angle = 180. * angle / np.pi  # convert to degrees
-			v = 2. * np.sqrt(2.) * np.sqrt(v)
-			ell = Ellipse(mean, v[0], v[1], 180. + angle, color=color)
-			ell.set_clip_box(splot.bbox)
-			ell.set_alpha(.5)
-			splot.add_artist(ell)
+        # plt.xticks(())
+        # plt.yticks(())
+        plt.title('Selected GMM: {}, {} components'.format(best_mod, best_num))
+        # plt.subplots_adjust(hspace=.35, bottom=.02)
+        plt.show()
 
-		# plt.xticks(())
-		# plt.yticks(())
-		plt.title(f'Selected GMM: {best_mod}, {best_num} components')
-		# plt.subplots_adjust(hspace=.35, bottom=.02)
-		plt.show()
-
-	# print('\nGMM took %0.3f\n' % (time.time() - st))
-	return anomalies, labels, anomalyDates
+    # print('\nGMM took %0.3f\n' % (time.time() - st))
+    return anomalies, labels, anomalyDates
 
 
 # ----------------------- Local Outlier Factor ----------------------------------------
