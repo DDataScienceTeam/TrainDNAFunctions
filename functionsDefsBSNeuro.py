@@ -106,7 +106,7 @@ class spectrogramDataset(object):
 #Fully connected 1D auto encoder
 ###########################################################################################
 class AutoencoderFC(nn.Module):
-    def __init__(self,args,inputSize = 1024,levels = 3, scale = 4):
+    def __init__(self,inputSize = 1024,levels = 3, scale = 4):
         #super(AutoencoderFC,self).__init__()
         super().__init__()
 
