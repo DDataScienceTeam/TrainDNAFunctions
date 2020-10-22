@@ -102,6 +102,48 @@ class spectrogramDataset(object):
     def __len__(self):
         return len(self.specs) 
 
+###########################################################################################
+#Fully connected 1D auto encoder
+###########################################################################################
+class AutoencoderFC(nn.Module):
+    def __init__(self,args,inputSize = 1024,levels = 3, scale = 4):
+        #super(AutoencoderFC,self).__init__()
+        super().__init__()
+
+        self.encoders = nn.ModuleList()
+        self.decoders = nn.ModuleList()
+        N = inputSize
+        L = levels
+        
+        for i in range(L):
+            n = inputSize if i==0 else int(N/(scale**i))
+            self.encoders.append(nn.Linear(in_features = n, out_features = int(N/(scale**(i+1)))))
+        for i in range(L):
+            n = inputSize if i==L-1 else int(N/(scale**(L-1-i)))
+            self.decoders.append(nn.Linear(in_features = int(N/(scale**(L-i))), out_features = n))
+            
+    def forward(self,x):
+        '''x = self.encoder(x)
+        x = self.decoder(x)'''
+        x_list = [x]
+        for i in self.encoders:
+            x_list.append(F.relu(i(x_list[-1])))
+            inp = x_list[-1]
+        for I,i in enumerate(self.decoders):
+            #add a previous output if we're not at the bottom of the U-Net nor the top
+            # inp = inp if I==0 or I==len(self.decoders)-1 else inp+x_list[len(self.encoders)-I]
+            
+            if I!=len(self.decoders)-1 :
+                inp = F.relu(i(inp)) 
+                # print('Hidden Layer')
+            else:
+                # inp = torch.clamp(i(inp),0,1)
+                inp = F.relu(i(inp))
+                # inp = torch.sigmoid(i(inp))
+                # print('outputlayer')
+
+        return inp
+
 
 ##################################################################################
 #UDFs
