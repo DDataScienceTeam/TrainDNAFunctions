@@ -102,6 +102,34 @@ class spectrogramDataset(object):
     def __len__(self):
         return len(self.specs) 
 
+class spectrogramDataset2(object):
+    def __init__(self, specList):
+
+        
+        self.specs = [] #spectrogram data
+        self.device = []
+        self.timestamp = []
+        self.index = [] #index of the data in chronological order
+        
+        for j,npSpec in enumerate(specList): #For eacfile (spectrum)
+            #Add index
+            self.index.append(j)  
+            self.device.append(npSpec[0])
+            self.timestamp.append(npSpec[1])
+            
+            #Add Spectrogram
+            npSpecInt = npSpec[2:]
+            tensorData  = torch.Tensor(npSpecInt).unsqueeze(0)#add channels NOTE if you want to apply transofmations do so here 
+            self.specs.append(tensorData)
+        
+            #Add velocity
+#             self.velocity.append(torch.Tensor(float(velList[j])))
+
+    def __getitem__(self, idx):
+        return self.specs[idx]
+    
+    def __len__(self):
+        return len(self.specs) 
 ###########################################################################################
 #Fully connected 1D auto encoder
 ###########################################################################################
