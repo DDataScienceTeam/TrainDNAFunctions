@@ -19,7 +19,7 @@ import pandas as pd
 #%%FFT Function
 def getFFT(sample, axisLen = 2048):
         x_fft_ = fft(sample, axisLen)
-        x_fft = 2.0 / axisLen * np.abs(x_fft_[0:axisLen//2])
+        x_fft = 2.0 / sqrt(axisLen) * np.abs(x_fft_[0:axisLen//2])
         return x_fft
 
 #%% smoothing function
