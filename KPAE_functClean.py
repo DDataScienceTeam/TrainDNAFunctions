@@ -20,7 +20,47 @@ import time
 from torch.utils.data import random_split
 import time
 from scipy.signal import butter,filtfilt
-from KPAE_funct import *
+import pandas as pd
+
+# from KPAE_funct import *
+class kPeaksDataset(object):
+    def __init__(self, data):
+        self.features = []
+        self.index = []
+        for index in range(data.shape[0]):
+            features = torch.Tensor(data[index,:])
+            # print(features.shape)
+            self.index.append(index)
+            self.features.append(features)
+            
+
+    def __getitem__(self, idx):
+        return self.features[idx]
+
+
+    def __len__(self):
+        return len(self.features)                      
+
+#%% Autoencoder function
+class FC_AE(nn.Module):
+    def __init__(self, midSize = 10, lowSize = 3):
+        super().__init__()
+        self.encoder = nn.Sequential(
+                nn.Linear(in_features=20, out_features=midSize),
+                nn.ReLU(True),
+                nn.Linear(in_features=midSize, out_features=lowSize),
+                nn.ReLU(True)
+            )
+        self.decoder = nn.Sequential(     
+                nn.Linear(in_features=lowSize, out_features=midSize),
+                nn.ReLU(True),
+                nn.Linear(in_features=midSize, out_features=20),
+                )
+    def forward(self,x):
+        y = self.encoder(x)
+        z = self.decoder(y)
+        return y,z
+
 
 
 def makeDataloader(data, colDrop = [], testSamples = 30, batchSize = 4):
@@ -35,6 +75,7 @@ def makeDataloader(data, colDrop = [], testSamples = 30, batchSize = 4):
     #Make datasets and dataloaders
     datasetFull = kPeaksDataset(featuresNorm)
     l = len(datasetFull)
+    torch.manual_seed(10)
     # print(l)
     datasetTrain, datasetVal = random_split(datasetFull, [l-testSamples, testSamples])
     dataloaderTrain = torch.utils.data.DataLoader(datasetTrain, batch_size=batchSize, shuffle=True)
